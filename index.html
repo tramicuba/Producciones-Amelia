@@ -11,10 +11,11 @@
         .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
         form { display: flex; flex-direction: column; gap: 15px; }
         label { font-weight: bold; color: #555; }
-        textarea, input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
         textarea { resize: vertical; }
         button { background-color: #1877f2; color: white; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
         button:hover { background-color: #166fe5; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; }
         th, td { padding: 14px; text-align: left; border-bottom: 1px solid #e4e6eb; }
         th { background-color: #f0f2f5; color: #65676b; font-weight: 600; }
@@ -22,6 +23,7 @@
         .Pendiente { background-color: #e7f3ff; color: #1877f2; }
         .Publicado { background-color: #e7f8ed; color: #2db85c; }
         .Error { background-color: #ffebe9; color: #e81123; }
+        .preview-img { max-width: 100px; max-height: 100px; border-radius: 6px; margin-top: 5px; display: block; }
     </style>
 </head>
 <body>
@@ -36,10 +38,10 @@
                 <textarea id="texto" rows="4" required placeholder="Escribe aquí tu oferta, precios, hashtags..."></textarea>
             </div>
             <div>
-                <label for="url_imagen">Enlace de la Imagen (Opcional)</label>
-                <input type="text" id="url_imagen" placeholder="https://qeiymehtsztgzffmwsad.supabase.co/storage/v1/object/public/...">
+                <label for="archivo_imagen">Subir Imagen desde el móvil u ordenador</label>
+                <input type="file" id="archivo_imagen" accept="image/*">
             </div>
-            <button type="submit">Guardar Promoción</button>
+            <button type="submit" id="btnGuardar">Guardar Promoción</button>
         </form>
     </div>
 
@@ -49,6 +51,7 @@
             <table id="tablaPromos">
                 <thead>
                     <tr>
+                        <th>Miniatura</th>
                         <th>Contenido</th>
                         <th>Estado</th>
                         <th>Fecha de Registro</th>
@@ -81,12 +84,19 @@
             }
 
             const tbody = document.querySelector('#tablaPromos tbody');
-            tbody.innerHTML = ''; // Limpiar tabla antes de recargar
+            tbody.innerHTML = ''; 
 
             data.forEach(promo => {
                 const fecha = new Date(promo.created_at).toLocaleString();
                 const fila = document.createElement('tr');
+                
+                // Si la promo tiene imagen, muestra una miniatura, si no un texto corto
+                const celdaImagen = promo.url_imagen 
+                    ? `<img src="${promo.url_imagen}" class="preview-img">` 
+                    : '<i>Sin imagen</i>';
+
                 fila.innerHTML = `
+                    <td>${celdaImagen}</td>
                     <td>${promo.texto_promocion}</td>
                     <td><span class="badge ${promo.estado}">${promo.estado}</span></td>
                     <td>${fecha}</td>
@@ -95,25 +105,63 @@
             });
         }
 
-        // Evento para capturar el formulario y enviar a Supabase
+        // Evento para capturar el formulario, subir imagen y enviar datos
         document.getElementById('promoForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const btnGuardar = document.getElementById('btnGuardar');
             const texto = document.getElementById('texto').value;
-            const imagen = document.getElementById('url_imagen').value;
+            const inputArchivo = document.getElementById('archivo_imagen');
+            
+            btnGuardar.disabled = true;
+            btnGuardar.innerText = "Subiendo imagen y guardando...";
 
-            const { error } = await supabase
+            let urlImagenPublica = null;
+
+            // 1. Si el usuario seleccionó una imagen, la subimos primero a Storage
+            if (inputArchivo.files.length > 0) {
+                const archivo = inputArchivo.files[0];
+                
+                // Creamos un nombre único para el archivo usando la fecha actual para que no se dupliquen
+                const nombreArchivo = `${Date.now()}_${archivo.name.replace(/\s+/g, '_')}`;
+
+                const { data: uploadData, error: uploadError } = await supabase
+                    .storage
+                    .from('imagenes-promos')
+                    .upload(nombreArchivo, archivo);
+
+                if (uploadError) {
+                    alert('Error al subir la imagen: ' + uploadError.message);
+                    btnGuardar.disabled = false;
+                    btnGuardar.innerText = "Guardar Promoción";
+                    return;
+                }
+
+                // Obtener la URL pública oficial de la imagen recién subida
+                const { data: urlData } = supabase
+                    .storage
+                    .from('imagenes-promos')
+                    .getPublicUrl(nombreArchivo);
+                
+                urlImagenPublica = urlData.publicUrl;
+            }
+
+            // 2. Insertar la promoción en la tabla con la URL de la imagen
+            const { error: insertError } = await supabase
                 .from('promociones')
                 .insert([
-                    { texto_promocion: texto, url_imagen: imagen || null, estado: 'Pendiente' }
+                    { texto_promocion: texto, url_imagen: urlImagenPublica, estado: 'Pendiente' }
                 ]);
 
-            if (error) {
-                alert('Hubo un error al guardar: ' + error.message);
+            btnGuardar.disabled = false;
+            btnGuardar.innerText = "Guardar Promoción";
+
+            if (insertError) {
+                alert('Hubo un error al guardar los datos: ' + insertError.message);
             } else {
                 alert('¡Promoción guardada con éxito!');
                 document.getElementById('promoForm').reset();
-                obtenerPromociones(); // Recargar tabla
+                obtenerPromociones(); // Recargar tabla para ver los cambios
             }
         });
 
