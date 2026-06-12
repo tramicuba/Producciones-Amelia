@@ -64,16 +64,16 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DE TU CONEXIÓN A SUPABASE
+       // CONFIGURACIÓN DE TU CONEXIÓN A SUPABASE
         const SUPABASE_URL = "https://qeiymehtsztgzffmwsad.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaXltZWh0c3p0Z3pmZm13c2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTcyNjcsImV4cCI6MjA5Njg3MzI2N30.Tan3MKApnt0iUPtKtnYYFkkcQAZGC2LpaWhz3z1CGWU";
 
-        // Inicializar el cliente de Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Inicializar el cliente con un nombre de variable único
+        const supabaseCliente = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Función para cargar los registros de la base de datos
         async function obtenerPromociones() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseCliente
                 .from('promociones')
                 .select('*')
                 .order('id', { ascending: false });
@@ -90,7 +90,6 @@
                 const fecha = new Date(promo.created_at).toLocaleString();
                 const fila = document.createElement('tr');
                 
-                // Si la promo tiene imagen, muestra una miniatura, si no un texto corto
                 const celdaImagen = promo.url_imagen 
                     ? `<img src="${promo.url_imagen}" class="preview-img">` 
                     : '<i>Sin imagen</i>';
@@ -121,11 +120,9 @@
             // 1. Si el usuario seleccionó una imagen, la subimos primero a Storage
             if (inputArchivo.files.length > 0) {
                 const archivo = inputArchivo.files[0];
-                
-                // Creamos un nombre único para el archivo usando la fecha actual para que no se dupliquen
                 const nombreArchivo = `${Date.now()}_${archivo.name.replace(/\s+/g, '_')}`;
 
-                const { data: uploadData, error: uploadError } = await supabase
+                const { data: uploadData, error: uploadError } = await supabaseCliente
                     .storage
                     .from('imagenes-promos')
                     .upload(nombreArchivo, archivo);
@@ -138,7 +135,7 @@
                 }
 
                 // Obtener la URL pública oficial de la imagen recién subida
-                const { data: urlData } = supabase
+                const { data: urlData } = supabaseCliente
                     .storage
                     .from('imagenes-promos')
                     .getPublicUrl(nombreArchivo);
@@ -147,7 +144,7 @@
             }
 
             // 2. Insertar la promoción en la tabla con la URL de la imagen
-            const { error: insertError } = await supabase
+            const { error: insertError } = await supabaseCliente
                 .from('promociones')
                 .insert([
                     { texto_promocion: texto, url_imagen: urlImagenPublica, estado: 'Pendiente' }
@@ -161,12 +158,13 @@
             } else {
                 alert('¡Promoción guardada con éxito!');
                 document.getElementById('promoForm').reset();
-                obtenerPromociones(); // Recargar tabla para ver los cambios
+                obtenerPromociones(); 
             }
         });
 
         // Ejecutar la carga de datos al abrir la página
         obtenerPromociones();
+
     </script>
 </body>
 </html>
