@@ -69,7 +69,7 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaXltZWh0c3p0Z3pmZm13c2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTcyNjcsImV4cCI6MjA5Njg3MzI2N30.Tan3MKApnt0iUPtKtnYYFkkcQAZGC2LpaWhz3z1CGWU";
 
         // Inicializar el cliente de Supabase
-        const supabase = @supabase/supabase-js.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Función para cargar los registros de la base de datos
         async function obtenerPromociones() {
