@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Producciones Amelia - Panel de Control</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 30px auto; padding: 0 20px; background-color: #f0f2f5; color: #333; }
+        h1 { color: #1877f2; text-align: center; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        form { display: flex; flex-direction: column; gap: 15px; }
+        label { font-weight: bold; color: #555; }
+        textarea, input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        textarea { resize: vertical; }
+        button { background-color: #1877f2; color: white; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background-color: #166fe5; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 14px; text-align: left; border-bottom: 1px solid #e4e6eb; }
+        th { background-color: #f0f2f5; color: #65676b; font-weight: 600; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; text-transform: uppercase; }
+        .Pendiente { background-color: #e7f3ff; color: #1877f2; }
+        .Publicado { background-color: #e7f8ed; color: #2db85c; }
+        .Error { background-color: #ffebe9; color: #e81123; }
+    </style>
+</head>
+<body>
+
+    <h1>🚀 Producciones Amelia</h1>
+    
+    <div class="container">
+        <h2>Crear Nueva Promoción</h2>
+        <form id="promoForm">
+            <div>
+                <label for="texto">Texto del anuncio (Facebook)</label>
+                <textarea id="texto" rows="4" required placeholder="Escribe aquí tu oferta, precios, hashtags..."></textarea>
+            </div>
+            <div>
+                <label for="url_imagen">Enlace de la Imagen (Opcional)</label>
+                <input type="text" id="url_imagen" placeholder="https://qeiymehtsztgzffmwsad.supabase.co/storage/v1/object/public/...">
+            </div>
+            <button type="submit">Guardar Promoción</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Lista de Publicaciones</h2>
+        <div style="overflow-x: auto;">
+            <table id="tablaPromos">
+                <thead>
+                    <tr>
+                        <th>Contenido</th>
+                        <th>Estado</th>
+                        <th>Fecha de Registro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN DE TU CONEXIÓN A SUPABASE
+        const SUPABASE_URL = "https://qeiymehtsztgzffmwsad.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaXltZWh0c3p0Z3pmZm13c2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTcyNjcsImV4cCI6MjA5Njg3MzI2N30.Tan3MKApnt0iUPtKtnYYFkkcQAZGC2LpaWhz3z1CGWU";
+
+        // Inicializar el cliente de Supabase
+        const supabase = @supabase/supabase-js.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Función para cargar los registros de la base de datos
+        async function obtenerPromociones() {
+            const { data, error } = await supabase
+                .from('promociones')
+                .select('*')
+                .order('id', { ascending: false });
+
+            if (error) {
+                console.error('Error obteniendo datos:', error);
+                return;
+            }
+
+            const tbody = document.querySelector('#tablaPromos tbody');
+            tbody.innerHTML = ''; // Limpiar tabla antes de recargar
+
+            data.forEach(promo => {
+                const fecha = new Date(promo.created_at).toLocaleString();
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${promo.texto_promocion}</td>
+                    <td><span class="badge ${promo.estado}">${promo.estado}</span></td>
+                    <td>${fecha}</td>
+                `;
+                tbody.appendChild(fila);
+            });
+        }
+
+        // Evento para capturar el formulario y enviar a Supabase
+        document.getElementById('promoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const texto = document.getElementById('texto').value;
+            const imagen = document.getElementById('url_imagen').value;
+
+            const { error } = await supabase
+                .from('promociones')
+                .insert([
+                    { texto_promocion: texto, url_imagen: imagen || null, estado: 'Pendiente' }
+                ]);
+
+            if (error) {
+                alert('Hubo un error al guardar: ' + error.message);
+            } else {
+                alert('¡Promoción guardada con éxito!');
+                document.getElementById('promoForm').reset();
+                obtenerPromociones(); // Recargar tabla
+            }
+        });
+
+        // Ejecutar la carga de datos al abrir la página
+        obtenerPromociones();
+    </script>
+</body>
+</html>
