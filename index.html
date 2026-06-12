@@ -6,28 +6,26 @@
     <title>Producciones Amelia - Panel de Control</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 30px auto; padding: 0 20px; background-color: #f0f2f5; color: #333; }
-        h1 { color: #1877f2; text-align: center; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 20px auto; padding: 0 15px; background-color: #f0f2f5; color: #1c1e21; }
+        h1 { color: #1877f2; text-align: center; font-size: 28px; }
+        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { font-size: 18px; margin-top: 0; color: #65676b; border-bottom: 1px solid #ebedf0; padding-bottom: 10px; }
         form { display: flex; flex-direction: column; gap: 15px; }
-        label { font-weight: bold; color: #555; }
-        textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-        textarea { resize: vertical; }
-        button { background-color: #1877f2; color: white; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        label { font-weight: 600; font-size: 14px; }
+        textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #dddfe2; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        button { background-color: #1877f2; color: white; padding: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         button:hover { background-color: #166fe5; }
-        button:disabled { background-color: #cccccc; cursor: not-allowed; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 14px; text-align: left; border-bottom: 1px solid #e4e6eb; }
-        th { background-color: #f0f2f5; color: #65676b; font-weight: 600; }
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; text-transform: uppercase; }
-        .Pendiente { background-color: #e7f3ff; color: #1877f2; }
-        .Publicado { background-color: #e7f8ed; color: #2db85c; }
-        .Error { background-color: #ffebe9; color: #e81123; }
-        .preview-img { max-width: 100px; max-height: 100px; border-radius: 6px; margin-top: 5px; display: block; }
-        
-        /* Estilo para el botón de eliminar */
-        .btn-eliminar { background-color: #e41e3f; color: white; padding: 6px 12px; border: none; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        .btn-eliminar:hover { background-color: #c21431; }
+        button:disabled { background-color: #ccd0d5; cursor: not-allowed; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e4e6eb; font-size: 14px; }
+        th { background-color: #f8f9fa; color: #65676b; }
+        .badge { padding: 5px 10px; border-radius: 15px; font-size: 11px; font-weight: bold; }
+        .Pendiente { background: #e7f3ff; color: #1877f2; }
+        .Publicado { background: #e7f8ed; color: #2db85c; }
+        .preview-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; }
+        .btn-eliminar { background-color: #f02849; color: white; padding: 6px 10px; border: none; border-radius: 5px; font-size: 12px; cursor: pointer; }
+        .btn-eliminar:hover { background-color: #d3213f; }
+        @media (max-width: 600px) { th:nth-child(4), td:nth-child(4) { display: none; } }
     </style>
 </head>
 <body>
@@ -35,154 +33,125 @@
     <h1>🚀 Producciones Amelia</h1>
     
     <div class="container">
-        <h2>Crear Nueva Promoción</h2>
+        <h2>Nueva Promoción</h2>
         <form id="promoForm">
             <div>
-                <label for="texto">Texto del anuncio (Facebook)</label>
-                <textarea id="texto" rows="4" required placeholder="Escribe aquí tu oferta, precios, hashtags..."></textarea>
+                <label>Texto del anuncio</label>
+                <textarea id="texto" rows="3" required placeholder="Escribe tu oferta..."></textarea>
             </div>
             <div>
-                <label for="archivo_imagen">Subir Imagen desde el móvil u ordenador</label>
+                <label>Imagen</label>
                 <input type="file" id="archivo_imagen" accept="image/*">
             </div>
-            <button type="submit" id="btnGuardar">Guardar Promoción</button>
+            <button type="submit" id="btnGuardar">Guardar y Enviar</button>
         </form>
     </div>
 
     <div class="container">
-        <h2>Lista de Publicaciones</h2>
+        <h2>Historial</h2>
         <div style="overflow-x: auto;">
             <table id="tablaPromos">
                 <thead>
                     <tr>
-                        <th>Miniatura</th>
-                        <th>Contenido</th>
+                        <th>Foto</th>
+                        <th>Texto</th>
                         <th>Estado</th>
-                        <th>Fecha de Registro</th>
+                        <th>Fecha</th>
                         <th>Acción</th>
                     </tr>
                 </thead>
-                <tbody>
-                    </tbody>
+                <tbody></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN DE TU CONEXIÓN A SUPABASE
         const SUPABASE_URL = "https://qeiymehtsztgzffmwsad.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaXltZWh0c3p0Z3pmZm13c2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTcyNjcsImV4cCI6MjA5Njg3MzI2N30.Tan3MKApnt0iUPtKtnYYFkkcQAZGC2LpaWhz3z1CGWU";
 
-        // Inicializar el cliente con un nombre de variable único
         const supabaseCliente = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Función para cargar los registros de la base de datos
         async function obtenerPromociones() {
             const { data, error } = await supabaseCliente
                 .from('promociones')
                 .select('*')
                 .order('id', { ascending: false });
 
-            if (error) {
-                console.error('Error obteniendo datos:', error);
-                return;
-            }
+            if (error) return console.error(error);
 
             const tbody = document.querySelector('#tablaPromos tbody');
             tbody.innerHTML = ''; 
 
             data.forEach(promo => {
-                const fecha = new Date(promo.created_at).toLocaleString();
+                const fecha = new Date(promo.created_at).toLocaleDateString();
                 const fila = document.createElement('tr');
-                
-                const celdaImagen = promo.url_imagen 
-                    ? `<img src="${promo.url_imagen}" class="preview-img">` 
-                    : '<i>Sin imagen</i>';
+                const foto = promo.url_imagen ? `<img src="${promo.url_imagen}" class="preview-img">` : '---';
 
                 fila.innerHTML = `
-                    <td>${celdaImagen}</td>
-                    <td>${promo.texto_promocion}</td>
+                    <td>${foto}</td>
+                    <td>${promo.texto_promocion.substring(0, 50)}...</td>
                     <td><span class="badge ${promo.estado}">${promo.estado}</span></td>
                     <td>${fecha}</td>
-                    <td><button class="btn-eliminar" onclick="eliminarPromocion(${promo.id})">Eliminar</button></td>
+                    <td><button class="btn-eliminar" onclick="eliminarPromocion(${promo.id}, '${promo.url_imagen}')">Borrar</button></td>
                 `;
                 tbody.appendChild(fila);
             });
         }
 
-        // Nueva Función para borrar un registro de la base de datos
-        async function eliminarPromocion(id) {
-            if (confirm('¿Estás seguro de que quieres eliminar esta publicación?')) {
-                const { error } = await supabaseCliente
-                    .from('promociones')
-                    .delete()
-                    .eq('id', id);
+        async function eliminarPromocion(id, urlImagen) {
+            if (!confirm('¿Eliminar esta promoción y su imagen permanentemente?')) return;
 
-                if (error) {
-                    alert('Error al eliminar: ' + error.message);
-                } else {
-                    alert('Publicación eliminada correctamente.');
-                    obtenerPromociones(); // Recargar la tabla automáticamente
-                }
+            // 1. Borrar imagen del Storage si existe
+            if (urlImagen && urlImagen !== 'null') {
+                const nombreArchivo = urlImagen.split('/').pop();
+                await supabaseCliente.storage.from('imagenes-promos').remove([nombreArchivo]);
             }
+
+            // 2. Borrar fila de la tabla
+            const { error } = await supabaseCliente.from('promociones').delete().eq('id', id);
+
+            if (error) alert('Error: ' + error.message);
+            else obtenerPromociones();
         }
 
-        // Evento para capturar el formulario, subir imagen y enviar datos
         document.getElementById('promoForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const btnGuardar = document.getElementById('btnGuardar');
+            const btn = document.getElementById('btnGuardar');
             const texto = document.getElementById('texto').value;
-            const inputArchivo = document.getElementById('archivo_imagen');
+            const inputImg = document.getElementById('archivo_imagen');
             
-            btnGuardar.disabled = true;
-            btnGuardar.innerText = "Subiendo imagen y guardando...";
+            btn.disabled = true;
+            btn.innerText = "Procesando...";
 
-            let urlImagenPublica = null;
+            let urlFinal = null;
 
-            if (inputArchivo.files.length > 0) {
-                const archivo = inputArchivo.files[0];
-                const nombreArchivo = `${Date.now()}_${archivo.name.replace(/\s+/g, '_')}`;
-
-                const { data: uploadData, error: uploadError } = await supabaseCliente
-                    .storage
-                    .from('imagenes-promos')
-                    .upload(nombreArchivo, archivo);
-
-                if (uploadError) {
-                    alert('Error al subir la imagen: ' + uploadError.message);
-                    btnGuardar.disabled = false;
-                    btnGuardar.innerText = "Guardar Promoción";
-                    return;
-                }
-
-                const { data: urlData } = supabaseCliente
-                    .storage
-                    .from('imagenes-promos')
-                    .getPublicUrl(nombreArchivo);
+            if (inputImg.files.length > 0) {
+                const file = inputImg.files[0];
+                const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
                 
-                urlImagenPublica = urlData.publicUrl;
+                const { error: upError } = await supabaseCliente.storage
+                    .from('imagenes-promos').upload(fileName, file);
+
+                if (!upError) {
+                    const { data: urlData } = supabaseCliente.storage
+                        .from('imagenes-promos').getPublicUrl(fileName);
+                    urlFinal = urlData.publicUrl;
+                }
             }
 
-            const { error: insertError } = await supabaseCliente
-                .from('promociones')
-                .insert([
-                    { texto_promocion: texto, url_imagen: urlImagenPublica, estado: 'Pendiente' }
-                ]);
+            const { error: insError } = await supabaseCliente.from('promociones')
+                .insert([{ texto_promocion: texto, url_imagen: urlFinal }]);
 
-            btnGuardar.disabled = false;
-            btnGuardar.innerText = "Guardar Promoción";
+            btn.disabled = false;
+            btn.innerText = "Guardar y Enviar";
 
-            if (insertError) {
-                alert('Hubo un error al guardar los datos: ' + insertError.message);
-            } else {
-                alert('¡Promoción guardada con éxito!');
+            if (insError) alert('Error al guardar');
+            else {
                 document.getElementById('promoForm').reset();
-                obtenerPromociones(); 
+                obtenerPromociones();
             }
         });
 
-        // Ejecutar la carga de datos al abrir la página
         obtenerPromociones();
     </script>
 </body>
